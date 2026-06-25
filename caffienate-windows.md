@@ -69,3 +69,27 @@ else { while ($true) { Start-Sleep -Seconds 60 } }
 Then `caffeinate.ps1 -Seconds 3600`.
 
 **Verify it's working.** In another PowerShell window, run `powercfg /requests` — you should see your PowerShell process listed under DISPLAY and SYSTEM.
+
+
+That's Windows treating `.ps1` as a generic file because the default association is set to a text editor (or nothing). Double-clicking won't run PowerShell scripts by design — it's a safety feature.
+
+A couple of ways to actually run it:
+
+**Right-click method (easiest):** Right-click the `.ps1` file → **Run with PowerShell**. That option should appear in the context menu. On Windows 11 you may need to click "Show more options" first to see it.
+
+**From a PowerShell window:** Open PowerShell, then:
+```powershell
+cd C:\Users\<you>\Scripts
+.\caffeinate.ps1
+```
+Note the `.\` prefix — PowerShell requires it for scripts in the current directory.
+
+**Make a shortcut that runs it on double-click:** This is probably what you actually want. Right-click your desktop → New → Shortcut, and paste this as the target:
+```
+powershell.exe -ExecutionPolicy Bypass -File "C:\Users\<you>\Scripts\caffeinate.ps1"
+```
+Name it "Caffeinate." Now double-clicking the shortcut opens a PowerShell window running the script. Close the window to release.
+
+**Quick sanity check on the filename:** you wrote `.psi` in your message — make sure the file is actually saved as `caffeinate.ps1` (with a one, not an i). If Notepad saved it as `caffeinate.ps1.txt`, Windows will treat it as text. Turn on File Explorer → View → File name extensions to see the real extension, and rename if needed.
+
+Don't change the default app association for `.ps1` to PowerShell itself — that's a known security footgun (malicious scripts could then run on double-click). The shortcut approach is the safe equivalent.
