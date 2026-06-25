@@ -26,6 +26,37 @@ finally {
     Write-Host "Released." -ForegroundColor Yellow
 }
 ```
+## with key stroke as well for teams
+
+```powershell
+# caffeinate.ps1 - keeps system awake AND prevents Teams/Slack idle status
+$sig = '[DllImport("kernel32.dll")] public static extern uint SetThreadExecutionState(uint esFlags);'
+$ste = Add-Type -MemberDefinition $sig -Name Power -Namespace Win32 -PassThru
+
+$KEEP_AWAKE = [Convert]::ToUInt32("80000003", 16)
+$RELEASE    = [Convert]::ToUInt32("80000000", 16)
+
+$ste::SetThreadExecutionState($KEEP_AWAKE) | Out-Null
+
+# Load WScript.Shell for sending keystrokes
+$wsh = New-Object -ComObject WScript.Shell
+
+Write-Host "Caffeinated + active. Press Ctrl+C to release." -ForegroundColor Green
+
+try {
+    while ($true) {
+        # Send F15 - a key that exists but does nothing visible on modern keyboards
+        $wsh::SendKeys.Invoke("{F15}") 2>$null
+        # Fallback if the above syntax is finicky on PS 5.1
+        $wsh.SendKeys("{F15}")
+        Start-Sleep -Seconds 50  # under Teams' 1-min idle threshold
+    }
+}
+finally {
+    $ste::SetThreadExecutionState($RELEASE) | Out-Null
+    Write-Host "Released." -ForegroundColor Yellow
+}
+```
 
 Save as `caffeinate.ps1` (in Notepad, set "Save as type" to **All Files** so it doesn't become `.ps1.txt`).
 
