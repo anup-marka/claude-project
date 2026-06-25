@@ -11,16 +11,18 @@ Here's the full setup, end to end.
 $sig = '[DllImport("kernel32.dll")] public static extern uint SetThreadExecutionState(uint esFlags);'
 $ste = Add-Type -MemberDefinition $sig -Name Power -Namespace Win32 -PassThru
 
-# ES_CONTINUOUS (0x80000000) | ES_SYSTEM_REQUIRED (0x01) | ES_DISPLAY_REQUIRED (0x02)
-$ste::SetThreadExecutionState([uint32]0x80000003) | Out-Null
+# Parse hex directly as uint32 to avoid Int32 overflow
+$KEEP_AWAKE = [Convert]::ToUInt32("80000003", 16)  # ES_CONTINUOUS | SYSTEM | DISPLAY
+$RELEASE    = [Convert]::ToUInt32("80000000", 16)  # ES_CONTINUOUS only
+
+$ste::SetThreadExecutionState($KEEP_AWAKE) | Out-Null
 Write-Host "Caffeinated. Press Ctrl+C to release." -ForegroundColor Green
 
 try {
     while ($true) { Start-Sleep -Seconds 60 }
 }
 finally {
-    # ES_CONTINUOUS only = release the lock
-    $ste::SetThreadExecutionState([uint32]0x80000000) | Out-Null
+    $ste::SetThreadExecutionState($RELEASE) | Out-Null
     Write-Host "Released." -ForegroundColor Yellow
 }
 ```
