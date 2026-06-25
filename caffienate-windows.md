@@ -12,7 +12,7 @@ $sig = '[DllImport("kernel32.dll")] public static extern uint SetThreadExecution
 $ste = Add-Type -MemberDefinition $sig -Name Power -Namespace Win32 -PassThru
 
 # ES_CONTINUOUS (0x80000000) | ES_SYSTEM_REQUIRED (0x01) | ES_DISPLAY_REQUIRED (0x02)
-$ste::SetThreadExecutionState(0x80000003) | Out-Null
+$ste::SetThreadExecutionState([uint32]0x80000003) | Out-Null
 Write-Host "Caffeinated. Press Ctrl+C to release." -ForegroundColor Green
 
 try {
@@ -20,7 +20,7 @@ try {
 }
 finally {
     # ES_CONTINUOUS only = release the lock
-    $ste::SetThreadExecutionState(0x80000000) | Out-Null
+    $ste::SetThreadExecutionState([uint32]0x80000000) | Out-Null
     Write-Host "Released." -ForegroundColor Yellow
 }
 ```
